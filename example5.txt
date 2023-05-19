@@ -1,0 +1,4 @@
+Examples/VS/Protein.mol2 Examples/VS/Lig1.mol2 --WBM=Examples/VS/desmond_setup_1.msj --MDM=Examples/VS/desmond_md_job_T1.msj --MDC=Examples/VS/desmond_md_job_T1.cfg
+Examples/VS/Protein.mol2 Examples/VS/Lig2.mol2 --WBM=Examples/VS/desmond_setup_2.msj --MDM=Examples/VS/desmond_md_job_T2.msj --MDC=Examples/VS/desmond_md_job_T2.cfg
+Examples/VS/Protein.mol2 Examples/VS/Lig3.mol2 --WBM=Examples/VS/desmond_setup_3.msj --MDM=Examples/VS/desmond_md_job_T3.msj --MDC=Examples/VS/desmond_md_job_T3.cfg
+Examples/VS/Protein.mol2 Examples/VS/Lig4.mol2 --WBM=Examples/VS/desmond_setup_4.msj --MDM=Examples/VS/desmond_md_job_T4.msj --MDC=Examples/VS/desmond_md_job_T4.cfg

@@ -1,0 +1,108 @@
+# Desmond standard NPT relaxation protocol
+# All times are in the unit of ps.
+# Energy is in the unit of kcal/mol.
+task {
+   task = "desmond:auto"
+   set_family = {
+      desmond = {
+         checkpt.write_last_step = no
+      }
+   }
+}
+
+simulate {
+   title       = "Brownian Dynamics NVT, T = 10 K, small timesteps, and restraints on solute heavy atoms, 100ps"
+   annealing   = off
+   time        = 100
+   timestep    = [0.001 0.001 0.003 ]
+   temperature = 10.0
+   ensemble = {
+      class = "NVT"
+      method = "Brownie"
+      brownie = {
+         delta_max = 0.1
+      }
+   }
+   restrain = {
+      atom = "solute_heavy_atom"
+      force_constant = 50.0
+   }
+}
+
+simulate {
+   title       = "NVT, T = 10 K, small timesteps, and restraints on solute heavy atoms, 12ps"
+   annealing   = off
+   time        = 12
+   timestep    = [0.001 0.001 0.003]
+   temperature = 10.0
+   restrain    = { atom = solute_heavy_atom force_constant = 50.0 }
+   ensemble    = {
+      class  = NVT
+      method = Langevin
+      thermostat.tau = 0.1
+   }
+
+   randomize_velocity.interval = 1.0
+   eneseq.interval             = 0.3
+   trajectory.center           = []
+}
+
+simulate {
+   title       = "NPT, T = 10 K, and restraints on solute heavy atoms, 12ps"
+   annealing   = off
+   time        = 12
+   temperature = 10.0
+   restrain    = retain
+   ensemble    = {
+      class  = NPT
+      method = Langevin
+      thermostat.tau = 0.1
+      barostat  .tau = 50.0
+   }
+
+   randomize_velocity.interval = 1.0
+   eneseq.interval             = 0.3
+   trajectory.center           = []
+}
+
+simulate {
+   title       = "NPT and restraints on solute heavy atoms, 12ps"
+   effect_if   = [["@*.*.annealing"] 'annealing = off temperature = "@*.*.temperature[0][0]"']
+   time        = 12
+   restrain    = retain
+   ensemble    = {
+      class  = NPT
+      method = Langevin
+      thermostat.tau = 0.1
+      barostat  .tau = 50.0
+   }
+
+   randomize_velocity.interval = 1.0
+   eneseq.interval             = 0.3
+   trajectory.center           = []
+}
+
+simulate {
+   title       = "NPT and no restraints, 24ps"
+   effect_if   = [["@*.*.annealing"] 'annealing = off temperature = "@*.*.temperature[0][0]"']
+   time        = 24
+   ensemble    = {
+      class  = NPT
+      method = Langevin
+      thermostat.tau = 0.1
+      barostat  .tau = 2.0
+   }
+
+   eneseq.interval   = 0.3
+   trajectory.center = solute
+}
+
+simulate {
+   cfg_file = "desmond_md_job_T4.cfg"
+   jobname  = "$MASTERJOBNAME"
+   dir      = "."
+   compress = ""
+}
+
+# Job launching command:
+# $SCHRODINGER/utilities/multisim -VIEWNAME desmond_molecular_dynamics_gui.MDApp -JOBNAME desmond_md_job_T4 -HOST localhost -maxjob 1 -cpu 1 -m desmond_md_job_T4.msj -c desmond_md_job_T4.cfg -description "Molecular Dynamics" desmond_md_job_T4.cms -mode umbrella -PROJ /home/miguel/.schrodinger/tmp/Tmp_26Apr2023_0959_12434 -DISP append -o desmond_md_job_T4-out.cms -lic DESMOND_GPGPU:16

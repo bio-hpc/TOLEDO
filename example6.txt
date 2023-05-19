@@ -1,0 +1,4 @@
+Examples/VS/ComplexText1-out.cms  --MDM=Examples/VS/desmond_md_job_T1.msj --MDC=Examples/VS/desmond_md_job_T1.cfg
+Examples/VS/ComplexText2-out.cms  --MDM=Examples/VS/desmond_md_job_T2.msj --MDC=Examples/VS/desmond_md_job_T2.cfg
+Examples/VS/ComplexText3-out.cms  --MDM=Examples/VS/desmond_md_job_T3.msj --MDC=Examples/VS/desmond_md_job_T3.cfg
+Examples/VS/ComplexText4-out.cms  --MDM=Examples/VS/desmond_md_job_T4.msj --MDC=Examples/VS/desmond_md_job_T4.cfg

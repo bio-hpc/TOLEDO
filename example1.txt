@@ -1,0 +1,4 @@
+Examples/VS/Protein.mol2 Examples/VS/Lig1.mol2
+Examples/VS/Protein.mol2 Examples/VS/Lig2.mol2
+Examples/VS/Protein.mol2 Examples/VS/Lig3.mol2
+Examples/VS/Protein.mol2 Examples/VS/Lig4.mol2

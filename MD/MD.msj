@@ -1,0 +1,231 @@
+task {
+  set_family = {
+     desmond = {
+        checkpt = {
+           write_last_step = false
+        }
+     }
+     simulate = {
+        temperature = "300.0"
+     }
+  }
+  task = "desmond:auto"
+}
+simulate {
+  annealing = false
+  backend = {
+     mdsim = {
+        plugin = {
+           maeff_output = {
+              nocenter = true
+           }
+        }
+     }
+  }
+  ensemble = {
+     brownie = {
+        delta_max = 0.1
+     }
+     class = NVT
+     method = Brownie
+  }
+  restrain = {
+     atom = solute
+     force_constant = 50.0
+  }
+  temperature = 10.0
+  time = 50
+  timestep = [0.001 0.001 0.003 ]
+  title = "Brownian Dynamics NVT, T = 10 K, small timesteps, and restraints on solute heavy atoms, 100ps"
+}
+simulate {
+  backend = {
+     force = {
+        term = {
+           GaussianForce = {
+              A = [10.0 10.0 ]
+              grp_energy = [1 1 ]
+              mu = [-10.0 10.0 ]
+              sigma = [0.5 0.5 ]
+              type = GaussianForce
+           }
+           list = [GaussianForce ]
+        }
+     }
+     mdsim = {
+        plugin = {
+           maeff_output = {
+              nocenter = true
+           }
+        }
+     }
+  }
+  ensemble = {
+     barostat = {
+        tau = 0.5
+     }
+     brownie = {
+        delta_max = 0.5
+     }
+     class = NPT
+     method = Brownie
+     thermostat = {
+        tau = 0.5
+     }
+  }
+  pressure = 1000
+  restrain = [
+     {atom = "asl: (membrane ) AND NOT ((atom.ele H))"
+      force_constant = [0.0 0.0 5.0 ]
+     }
+     {atom = solute_heavy_atom
+      force_constant = 20.0
+     }
+  ]
+  temperature = 100
+  time = 20
+  timestep = [0.002 0.002 0.004 ]
+  title = "50 K, H2O Barrier, Browninan NPT, membrane restrained in z, protein restrained"
+}
+simulate {
+  backend = {
+     force = {
+        term = {
+           GaussianForce = {
+              A = [10.0 10.0 ]
+              grp_energy = [1 1 ]
+              mu = [-10.0 10.0 ]
+              sigma = [0.5 0.5 ]
+              type = GaussianForce
+           }
+           list = [GaussianForce ]
+        }
+     }
+     mdsim = {
+        plugin = {
+           maeff_output = {
+              nocenter = true
+           }
+        }
+     }
+  }
+  ensemble = {
+     barostat = {
+        tau = 2.0
+     }
+     class = NPgT
+     method = MTK
+     thermostat = {
+        tau = 1.0
+     }
+  }
+  pressure = 1000
+  restrain = [
+     {atom = "asl: (membrane and atom.ele P,N)"
+      force_constant = [0.0 0.0 2.0 ]
+     }
+     {atom = solute_heavy_atom
+      force_constant = 10.0
+     }
+  ]
+  temperature = 100
+  time = 100
+  timestep = [0.002 0.002 0.004 ]
+  title = "50 K, H2O Barrier, NPgT, membrane restrained in z, protein restrained"
+}
+simulate {
+  annealing = true
+  backend = {
+     force = {
+        term = {
+           GaussianForce = {
+              A = [2.0 ]
+              grp_energy = [1 ]
+              mu = [0.0 ]
+              sigma = [5 ]
+              type = GaussianForce
+           }
+           list = [GaussianForce ]
+        }
+     }
+     mdsim = {
+        plugin = {
+           anneal = {
+              interval = 0.09
+           }
+           list = ["!append!" posre_schedule ]
+           maeff_output = {
+              nocenter = true
+           }
+           posre_schedule = {
+              schedule = {
+                 time = [0 60 100 ]
+                 value = [1.0 0.2 0.2 ]
+              }
+              type = posre_schedule
+           }
+        }
+     }
+  }
+  ensemble = {
+     barostat = {
+        tau = 2.0
+     }
+     class = NPgT
+     method = MTK
+     thermostat = {
+        tau = 0.1
+     }
+  }
+  pressure = 100
+  restrain = [
+     {atom = "asl: (membrane and atom.ele P,N)"
+      force_constant = [0.0 0.0 2.0 ]
+     }
+     {atom = solute_heavy_atom
+      force_constant = 10.0
+     }
+  ]
+  temperature = [
+     [100 0 ]
+     [200 100 ]
+     [300 150 ]
+  ]
+  time = 150
+  timestep = [0.002 0.002 0.004 ]
+  title = "NPgT, Heating from 100 -> 300 K, H2O Barrier and gradual release of restrain"
+}
+simulate {
+  ensemble = {
+     class = NVT
+     method = NH
+     thermostat = {
+        tau = 1
+     }
+  }
+  restrain = {
+     atom = "asl: ((backbone or ligand) and not a.e H)"
+     force_constant = 5.0
+  }
+  temperature = 300
+  time = 50
+  title = "NVT production remove all restraints"
+}
+simulate {
+  ensemble = {
+     class = NVT
+     method = NH
+     thermostat = {
+        tau = 1
+     }
+  }
+  temperature = "300.0"
+  time = 50
+  title = "NVT production remove all restraints"
+}
+simulate {
+  cfg_file = "MD.cfg"
+  compress = ""
+  dir = "."
+  jobname = "$MASTERJOBNAME"
+}
