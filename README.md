@@ -16,6 +16,7 @@ Maestro-Desmond installation
 ### Download Singularity Image
 Needed to secure compatibility with the HPC cluster.
 wget --no-check-certificate -r "https://drive.google.com/u/1/uc?export=download&confirm=TLUF&id=1AzDw0DmtX9MBv-lNPaj1-LZ-90GEj9tX" -O singularity.tar
+
 tar xf singularity.tar
 
 ### Configuration
