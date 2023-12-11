@@ -2,10 +2,10 @@
 #Firs script with a short (1ns) MD
 #Variables
 #Have to be introduced by users before use TOLEDO first time
-export SCHRODINGER="/home/miguel/opt/schrodinger/2020-04/"
+export SCHRODINGER="/opt/schrodinger/2020-04/"
 export SCHRODINGER_PYTHONPATH="" 
 cluster_perfomace=1 # 1 is for a performance of 24h, 2 for 48h and 0.5 for 12h 
-
+WB="WB_desmond/"  # WB
 #Do not change anything below this line
 while (( $# )) 
  do
@@ -28,14 +28,13 @@ while (( $# ))
 done
 
 h=$(hostname)
-
+echo ${m}
 
 if [[ $m != "y" ]];then 
 #Build complexes
-
 ext="${prot##*.}"
-prot="$(basename "$prot" | sed 's/\(.*\)\..*/\1/')"
-
+prot="$(echo "$prot" | sed 's/\(.*\)\..*/\1/')"
+echo $prot
 if [[ $ext == "mol2" ]] 
 then
 echo "mol2 file"
@@ -51,7 +50,7 @@ echo "Error: Incorrect extension file"
 fi
 
 ext="${lig##*.}"
-lig="$(basename "$lig" | sed 's/\(.*\)\..*/\1/')"
+lig="$(echo "$lig" | sed 's/\(.*\)\..*/\1/')"
 echo $lig
 if [[ $ext == "mol2" ]] 
 then
@@ -69,7 +68,7 @@ fi
 cat "$d/protein.mae" "$d/ligand.mae" > "$d/complex.mae" 
 
 #Build of water box (WB)
-charge=$( python ../Scripts/CheckCharges.py "$d/protein.mol2" "$d/ligand.mol2")
+charge=$( python Scripts/CheckCharges.py "$d/protein.mol2" "$d/ligand.mol2")
 
 cd "$d/"
 if [[ ! -z $WBM ]] #Check WB parameters
@@ -77,9 +76,9 @@ then
 cp $WBM desmond_setup_test_toledo.msj
 elif [[ $charge == "Negative" ]]
 then
-cp ../../WB/WB_Negative.msj desmond_setup_test_toledo.msj
+cp ../../${WB}/WB_Negative.msj desmond_setup_test_toledo.msj
 else
-cp ../../WB/WB_Positive.msj desmond_setup_test_toledo.msj
+cp ../../${WB}/WB_Positive.msj desmond_setup_test_toledo.msj
 fi
 
 $SCHRODINGER/utilities/multisim -JOBNAME desmond_setup_test_toledo -m desmond_setup_test_toledo.msj complex.mae -o complex_WB-out.cms -HOST $h 
@@ -91,6 +90,10 @@ counter=1 #counter to obtain final MD
 
 tiempo=$t #Ending time of MD
 
+if [[ $m == "y" ]];then
+cd "$d/"
+cp ../../$c complex_WB-out.cms
+fi
 
 if [[ ! -z $MDM ]] && [[ ! -z $MDC ]]  #Check MD parameters
 then
@@ -100,26 +103,20 @@ else
 cp ../../MD/MD.msj ./MD.msj
 cp ../../MD/MD.cfg ./MD.cfg
 fi
-
-
-if [[ $m == "Y" ]];then
-cd "$d/"
-cp $c $d/complex_WB-out.cms
-fi
  
-$SCHRODINGER/utilities/multisim -JOBNAME DM  -HOST $h -maxjob 1 -cpu 24 -m MD.msj -c MD.cfg -description "Molecular Dynamics" complex_WB-out.cms -mode umbrella -o complex_MD-out.cms -set stage[1].set_family.md.jlaunch_opt=[\"-gpu\"] -WAIT > Dinamica.txt 2> Dinamica.err 
+$SCHRODINGER/utilities/multisim -JOBNAME DM  -HOST $h -maxjob 1 -cpu 8 -m MD.msj -c MD.cfg -description "Molecular Dynamics" complex_WB-out.cms -mode umbrella -o complex_MD-out.cms -set stage[1].set_family.md.jlaunch_opt=[\"-gpu\"] -WAIT > Dinamica.txt 2> Dinamica.err 
 
 mv DM_trj/ DM_"$counter"_trj/
 mv DM-out.cms DM_"$counter"-out.cms
 cp DM.cpt DM_"$counter".cpt
 
 counter=$(($counter+1))
-tf=$( cat DM.log | tail -10 | head -1 | awk '{ print $3 }' | tr "." "\n" | head -1)
-echo $tf
-speed=$( cat DM.log | tail -10 | head -1 | awk '{ print $8 }' | tr "." "\n" | head -1)
-increment=$(((($speed*3))/4)) $(($speed*$cluster_perfomace))
+tf=$( cat DM.log | grep Chemical | tail -1 | awk '{ print $3 }' | tr "." "\n" | head -1)
+cp DM.log DM_1.log
+speed=$( cat DM.log | grep Chemical | tail -1 |awk '{ print $8 }' | tr "." "\n" | head -1)
+increment=$(((($speed*$cluster_perfomace*3000))/4))
 te=$(($tf+$increment)) #Extension time of the next MD
-
+echo $increment > F.txt
 sbatch $G --gres=gpu:1 --mem=20G --time=24:00:00 --cpus-per-task=8 -J TOLEDO -p $p --output=TOLEDO1.out --error=TOLEDO1.err -n 1 ../../Toledo_ES.sh -c $counter -a $te -f $tiempo -r $d -p $p -g $G 
 
 scancel $SLURM_JOB_ID

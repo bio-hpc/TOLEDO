@@ -24,8 +24,8 @@ def graphs_Maestro(path,time):
     protein=protein.astype(np.float)
 
     #Build Matrix of data
-    tiempo=list(range(0,len(protein),1)) # automatizar
-    ns= [x / (len(protein)/time) for x in tiempo] #automatizar
+    tiempo=list(range(0,len(protein),1)) 
+    ns= [x / (len(protein)/time) for x in tiempo]
     leyenda=["Ligand","Protein"];print(tiempo)
     ax1.plot(ns, ligand,color="green",linewidth=0.75);ax1.plot(ns, protein,color="maroon",linewidth=0.75)
     #Obtain maxium RMSD value

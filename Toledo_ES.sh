@@ -2,7 +2,7 @@
 #Script to run extension
 #Variables
 #Have to be introduced by users before use TOLEDO first time
-export SCHRODINGER="/home/miguel/opt/schrodinger/2020-04/"
+export SCHRODINGER="/opt/schrodinger/2020-04/"
 export SCHRODINGER_PYTHONPATH="" 
 cluster_perfomace=1 # 1 is for a performance of 24h, 2 for 48h and 0.5 for 12h 
 
@@ -25,7 +25,10 @@ while (( $# ))
 done
 
 h=$(hostname)
-
+echo "Espacio"
+echo "$te"
+echo "$time"
+echo "Espacio"
 #Checks if extension time is equal or greater than final time
 if [ "$te" -ge "$time" ];then
 	te=$time
@@ -39,18 +42,19 @@ mv DM-out.cms DM_"$counter"-out.cms
 cp DM.cpt DM_"$counter".cpt
 
 
-tf=$( cat DM.log | tail -10 | head -1 | awk '{ print $3 }' | tr "." "\n" | head -1)
+tf=$( cat DM.log | grep Chemical | tail -1 | awk '{ print $3 }' | tr "." "\n" | head -1)
 #Checks if extension time is lower than final time
 if [ "$tf" -lt "$time" ];then
 	#Next MD 
 	counter=$(($counter+1))
-	speed=$( cat DM.log | tail -10 | head -1 | awk '{ print $8 }' | tr "." "\n" | head -1)
-	increment=$(((($speed*3))/4)) $(($speed*$cluster_perfomace))
+	speed=$( cat DM.log | grep Chemical | tail -1 | awk '{ print $8 }' | tr "." "\n" | head -1)
+	cp DM.log DM_1$counter.log
+	increment=$(((($speed*$cluster_perfomace*3000))/4))
 	te=$(($tf+$increment))
-
-	sbatch $G --mem=20G --time=24:00:00 --cpus-per-task=24 -J TOLEDO -p $p --output=TOLEDO2.out --error=TOLEDO2.err -n 1 ../../Toledo_ES.sh -c $counter -a $te -f $time -d $path -p $p -g $G 
+	echo "$increment">T12.txt
+	sbatch $G --mem=20G --time=24:00:00 --cpus-per-task=8 -J TOLEDO -p $p --output=TOLEDO2.out --error=TOLEDO2.err -n 1 ../../Toledo_ES.sh -c $counter -a $te -f $time -d $path -p $p -g $G 
 else
-  	sbatch $G --mem=20G --time=24:00:00 --cpus-per-task=24 -J TOLEDO -p $p --output=TOLEDO3.out --error=TOLEDO3.err -n 1 ../../Toledo_UN.sh -c $counter -t $time -p $p -g $G
+  	sbatch $G --mem=20G --time=24:00:00 --cpus-per-task=8 -J TOLEDO -p $p --output=TOLEDO3.out --error=TOLEDO3.err -n 1 ../../Toledo_UN.sh -c $counter -t $time -p $p -g $G
 
 
 fi
