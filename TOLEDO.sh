@@ -10,10 +10,59 @@ while (( $# ))
 		-D )  d=$2;;                    #path (Mandatory)
 		-G ) G=$2;;                     # GPU parameters (Optional)
 		-M ) m=$2;;			# Membrane: Y/N (Optional, default parameter is N)
+	    	-H ) H="Y";;                    # Help message
 	    esac
 	fi
   shift 
 done
+if  [[ $H == "Y" ]] ; then
+echo " _____ ___  _     _____ ____   ___  
+ |_   _/ _ \| |   | ____|  _ \ / _ \ 
+   | || | | | |   |  _| | | | | | | |
+   | || |_| | |___| |___| |_| | |_| |
+   |_| \___/|_____|_____|____/ \___/ 
+   
+   
+   Help:
+   
+   [O=Optional,M=Mandatory]                                  
+    
+    Global Options
+    ---------------------------------
+    -t ) [ M ] Length time of the MD simulation (in ps)
+    -f ) [ M ] Txt file with path of protein & ligand/ complex [M] and msj and cfg files [O]
+    -d ) [ M ] Directory where results dare will be saved
+    -p ) [ M ] Specific partition for resource allocation. The resources can be check with sinfo -s.
+    -G ) [ M ] Specify the GPU resources.
+    -M ) [ O ] Specify the type of MD simulation (protein & ligand or  complex), by default is No (protein & ligand) if user put -m y the type of MD simulations is complex built manually by users.
+    -H ) [ O ] Show this message
+    
+    Txt File Options
+    ---------------------------------
+    The txt file have six modes:
+    
+    1) VS without membrane or modifications:
+    	Examples/VS/Protein.mol2 Examples/VS/Lig1.mol2
+    	
+    2) VS with membrane and without modifications (-m y):
+    	Examples/VS/Complex1-out.cms
+     
+    3) VS without membrane or modifications in the Water Box (with --WBM= tag):
+    	Examples/VS/Protein.mol2 Examples/VS/Lig1.mol2 --WBM=Examples/VS/desmond_setup_1.msj
+    	
+    4) VS without membrane or modifications in the MD parameters (with --MDM= and --MDC= tags):
+    	Examples/VS/Protein.mol2 Examples/VS/Lig1.mol2 --MDM=Examples/VS/desmond_md_job_T1.msj --MDC=Examples/VS/desmond_md_job_T1.cfg
+    
+    5) VS without membrane or modifications in the Water Box and MD parameters (with --WBM= tag, --MDM= and --MDC= tags):
+    	Examples/VS/Protein.mol2 Examples/VS/Lig1.mol2 --MDM=Examples/VS/desmond_md_job_T1.msj --MDC=Examples/VS/desmond_md_job_T1.cfg
+    
+    6) VS with membrane or modifications in the MD parameters (-m y and --MDM= and --MDC= tags):
+	Examples/VS/ComplexText1-out.cms  --MDM=Examples/VS/desmond_md_job_T1.msj --MDC=Examples/VS/desmond_md_job_T1.cfg     
+	  
+    "
+exit 0
+fi
+
 mkdir $d
 if [[ $m == "Y" ]] || [[ $m == "y" ]];then # Check of membrane
 	m="y"
